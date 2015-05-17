@@ -1,0 +1,115 @@
+---
+title: "RR-Assignment 1"
+author: "Ashutosh Gupta"
+date: "Monday, May 11, 2015"
+output: html_document
+---
+
+## Loading and preprocessing the data
+
+```{r}
+df <- read.csv("C:/Users/admin/Documents/GitHub/RR/activity.csv",header=T)
+attach(df)
+head(df,10)
+```
+
+## What is mean total number of steps taken per day?
+
+```{r}
+total_steps <- aggregate(steps~date,df,sum,na.rm=TRUE)
+total_steps
+hist(total_steps$steps,main="Histogram of Total Steps by Day", breaks = 10,col = "blue")
+    
+abline(v = mean(total_steps$steps),col = "red",lty = 1)
+abline(v = median(total_steps$steps),col = "green",lty = 3)
+text(mean(total_steps$steps),15,labels = "mean",pos = 4,col = "red")
+text(median(total_steps$steps),13,labels="median", pos=4, col="green") 
+mean_steps <- mean(total_steps$steps)
+median_steps <- median(total_steps$steps)
+print(mean_steps)
+print(median_steps)
+```
+
+
+## What is the average daily copy_df pattern?
+
+```{r}
+tseries <- aggregate(steps~interval,df,mean,na.rm=TRUE)
+names(tseries)
+str(tseries)
+summary(tseries)
+plot(tseries$interval,tseries$steps,col = "blue",type="l",xlab = "5 min Interval",ylab = "Average Number of Steps",main = "Average Daily copy_df Pattern")
+
+tseries$interval[tseries$steps == max(tseries$steps)]
+
+```
+
+## Imputing missing values
+
+```{r}
+NAs <- function(x) {
+    as.vector(apply(x, 2, function(x) length(which(is.na(x)))))
+    }
+sprintf("Total no of NA in Steps are %i ",NAs(df[1]))
+sprintf("Total no of NA in date are : %i",NAs(df[2]))
+sprintf("Total no of NA in interval are : %i",NAs(df[3]))
+sprintf("Total no of rows with NA: %i",NAs(df[1]))
+
+index <- which(is.na(df$steps))
+
+# Create a vector of means
+avg_vector <- rep(mean(df$steps, na.rm=TRUE), times=length(index))
+df[index, "steps"] <- avg_vector
+head(df)
+copy_df <- df
+head(copy_df)
+# Clear the workspace
+rm(avg_vector, index)
+sum_aggregate <- aggregate(df$steps, by=list(df$date), FUN=sum)
+
+# Rename the attributes
+names(sum_aggregate) <- c("date", "total")
+hist(sum_aggregate$total, 
+     breaks=seq(from=0, to=25000, by=2500),
+     col="blue", 
+     xlab="Total number of steps", 
+     ylim=c(0, 30), 
+     main="Histogram of the total number of steps taken each day\n(NA replaced by mean value)")
+x <-mean(sum_aggregate$total)
+y <- median(sum_aggregate$total)
+sprintf("Revised mean and median adter imputing NAs are %f",round(x,0))
+sprintf("Revised mean and median adter imputing NAs are %f",round(y,0))
+```
+
+## Are there differences in copy_df patterns between weekdays and weekends?
+
+```{r}
+copy_df$weekdays <- weekdays(as.Date(copy_df$date))
+
+#levels(copy_df$weekdays)
+#str(copy_df)
+#table(copy_df$weekdays)
+
+copy_df$date <- as.Date(copy_df$date,'%Y-%m-%d') 
+
+copy_df$Day<- as.factor(ifelse(weekdays(copy_df$date) %in% c("Saturday","Sunday"),"Weekend","Weekday"))
+
+mean_aggregation <- aggregate(copy_df$steps, 
+                       by=list(copy_df$Day, 
+                               copy_df$weekdays, copy_df$interval), mean)
+
+# Rename the attributes
+names(mean_aggregation) <- c("day", "weekday", "interval", "mean")
+
+class(mean_aggregation)
+library(lattice)
+xyplot(mean_aggregation[,4] ~ mean_aggregation[,3] | mean_aggregation[,1], mean_aggregation, 
+       type="l", 
+       lwd=1, 
+       xlab="Interval", 
+       ylab="Number of steps", 
+       layout=c(1,2))
+
+
+
+```
