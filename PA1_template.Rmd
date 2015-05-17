@@ -17,7 +17,7 @@ head(df,10)
 
 ```{r}
 total_steps <- aggregate(steps~date,df,sum,na.rm=TRUE)
-total_steps
+
 hist(total_steps$steps,main="Histogram of Total Steps by Day", breaks = 10,col = "blue")
     
 abline(v = mean(total_steps$steps),col = "red",lty = 1)
@@ -31,14 +31,14 @@ print(median_steps)
 ```
 
 
-## What is the average daily copy_df pattern?
+## What is the average daily activity pattern?
 
 ```{r}
 tseries <- aggregate(steps~interval,df,mean,na.rm=TRUE)
 names(tseries)
 str(tseries)
 summary(tseries)
-plot(tseries$interval,tseries$steps,col = "blue",type="l",xlab = "5 min Interval",ylab = "Average Number of Steps",main = "Average Daily copy_df Pattern")
+plot(tseries$interval,tseries$steps,col = "blue",type="l",xlab = "5 min Interval",ylab = "Average Number of Steps",main = "Average Daily Activity Pattern")
 
 tseries$interval[tseries$steps == max(tseries$steps)]
 
@@ -57,17 +57,16 @@ sprintf("Total no of rows with NA: %i",NAs(df[1]))
 
 index <- which(is.na(df$steps))
 
-# Create a vector of means
+
 avg_vector <- rep(mean(df$steps, na.rm=TRUE), times=length(index))
 df[index, "steps"] <- avg_vector
-head(df)
+
 copy_df <- df
-head(copy_df)
-# Clear the workspace
+
 rm(avg_vector, index)
 sum_aggregate <- aggregate(df$steps, by=list(df$date), FUN=sum)
 
-# Rename the attributes
+
 names(sum_aggregate) <- c("date", "total")
 hist(sum_aggregate$total, 
      breaks=seq(from=0, to=25000, by=2500),
@@ -81,7 +80,7 @@ sprintf("Revised mean and median adter imputing NAs are %f",round(x,0))
 sprintf("Revised mean and median adter imputing NAs are %f",round(y,0))
 ```
 
-## Are there differences in copy_df patterns between weekdays and weekends?
+## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r}
 copy_df$weekdays <- weekdays(as.Date(copy_df$date))
